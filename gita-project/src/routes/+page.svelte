@@ -1,15 +1,42 @@
 <script>
-    import { Facebook, Twitter, Youtube, Instagram } from "lucide-svelte";
-    
+  import { Facebook, Twitter, Youtube, Instagram } from "lucide-svelte";
+  import { getChapter } from "$lib/api/geeta.js";
+
   let mobileMenu = false;
   let activeDropdown = null;
+
+  let selectedChapter = null;
+  let verses = [];
+  let loading = false;
 
   function toggleDropdown(name) {
     activeDropdown = activeDropdown === name ? null : name;
   }
 
-  // Chapters List
+  // Load verses from API
+  async function loadChapter(ch) {
+    selectedChapter = ch;
+    loading = true;
+    verses = await getChapter(ch);
+    loading = false;
+  }
+
   const chapters = Array.from({ length: 18 }, (_, i) => i + 1);
+
+ 
+  function htmlContent(node, html) {
+    node.innerHTML = html;
+
+    return {
+      update(newHtml) {
+        node.innerHTML = newHtml;
+      }
+    };
+  }
+
+
+
+
 </script>
 
 <svelte:head>
@@ -216,97 +243,135 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 px-2">
         {#each chapters as chapter}
-<div class="flex justify-center">
-  <div class="chapter">
-    
-    <!-- IMAGE -->
-    <div class="chapter_img">
-      <img src="src/lib/assets/gita_book.jpg" alt="" />
-    </div>
+          <div class="flex justify-center">
+            <div
+              class="chapter cursor-pointer"
+              on:click={() => loadChapter(chapter)}
+            >
+              <!-- IMAGE -->
+              <div class="chapter_img">
+                <img src="src/lib/assets/gita_book.jpg" alt="" />
+              </div>
 
-    <!-- NUMBER BAR -->
-    <div class="chapter_num">
-      <p>{chapter}</p>
-    </div>
+              <!-- NUMBER BAR -->
+              <div class="chapter_num">
+                <p>{chapter}</p>
+              </div>
+            </div>
+          </div>
 
-  </div>
-</div>
+          <style>
+            /* OUTER DIAMOND BOX */
+            .chapter {
+              width: 147px;
+              height: 147px;
+              overflow: hidden;
+              position: relative;
+              transform: rotate(45deg);
+              border-radius: 15px;
+              border: 1px solid #928c8c;
+              margin: 30px;
+              cursor: pointer;
+            }
 
-<style>
-  /* OUTER DIAMOND BOX */
-  .chapter {
-    width: 147px;
-    height: 147px;
-    overflow: hidden;
-    position: relative;
-    transform: rotate(45deg);
-    border-radius: 15px;
-    border: 1px solid #928c8c;
-    margin: 30px;
-    cursor: pointer;
-  }
+            /* INNER IMAGE (BIG + CENTERED PERFECTLY) */
+            .chapter_img img {
+              width: 500px; /* Bigger image */
+              position: absolute;
+              transform: rotate(-45deg);
+              top: 1px; /* moves image down/up */
+              left: 1px; /* moves image left/right */
+            }
 
-  /* INNER IMAGE (BIG + CENTERED PERFECTLY) */
-  .chapter_img img {
-    width: 500px;          /* Bigger image */
-    position: absolute;
-    transform: rotate(-45deg);
-    top: 1px;            /* moves image down/up */
-    left: 1px;          /* moves image left/right */
-  }
+            /* NUMBER BAR (GRAY TRANSLUCENT) */
+            .chapter_num {
+              position: absolute;
+              background-color: #352c2cad;
+              width: 258px;
+              transform: rotate(-45deg);
+              top: 36%;
+              left: -41%;
+              padding: 5px 0;
+              text-align: center;
+            }
 
-  /* NUMBER BAR (GRAY TRANSLUCENT) */
-  .chapter_num {
-    position: absolute;
-    background-color: #352c2cad;
-    width: 258px;
-    transform: rotate(-45deg);
-    top: 36%;
-    left: -41%;
-    padding: 5px 0;
-    text-align: center;
-  }
-
-  .chapter_num p {
-    font-size: 20px;
-    font-weight: 500;
-    color: white;
-    margin: 0;
-    text-shadow: 0px 2px 2px rgba(0,0,0,0.4);
-  }
-</style>
-
-
-
+            .chapter_num p {
+              font-size: 20px;
+              font-weight: 500;
+              color: white;
+              margin: 0;
+              text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4);
+            }
+          </style>
         {/each}
       </div>
+   {#if loading}
+  <p class="text-center text-lg text-black mt-6">Loading verses...</p>
+{/if}
+
+{#if selectedChapter && verses.length}
+  <div class="mt-10 bg-white/60 p-6 rounded shadow-lg backdrop-blur-sm">
+    
+    <h3 class="text-2xl font-bold text-center mb-4 text-[#3E4939]">
+      Chapter {selectedChapter} — Verses
+    </h3>
+
+    {#each verses as v}
+      <div class="my-4 p-4 bg-white/80 rounded shadow">
+        
+        <!-- FIX: Pass v.html here -->
+        <div
+          class="text-gray-900 text-base leading-relaxed"
+          use:htmlContent={v.html}
+        ></div>
+
+        {#if v.audio}
+          <audio controls class="mt-2 w-full">
+            <source src={v.audio} type="audio/mpeg" />
+          </audio>
+        {/if}
+
+      </div>
+    {/each}
+
+  </div>
+{/if}
+
+
     </div>
   </section>
 </div>
 
 <!-- ========================= FOOTER ========================= -->
-<footer 
+<footer
   class="text-white py-6 bg-cover bg-center bg-no-repeat relative w-full"
   style="background-image: url('src/lib/assets/footerimg.png');"
 >
-
   <div class="relative max-w-7xl mx-auto">
-
     <!-- CONNECT -->
     <div class="text-center">
-        
-        <div class="flex justify-center gap-3">
-          <h4 class="text-2xl font-serif mb-2 text-[rgb(202,202,202)]">Connect</h4>
-        <button class="border-2 border-white rounded-full p-2 hover:bg-white hover:text-[#3d4d42] transition">
+      <div class="flex justify-center gap-3">
+        <h4 class="text-2xl font-serif mb-2 text-[rgb(202,202,202)]">
+          Connect
+        </h4>
+        <button
+          class="border-2 border-white rounded-full p-2 hover:bg-white hover:text-[#3d4d42] transition"
+        >
           <Facebook class="w-5 h-5" />
         </button>
-        <button class="border-2 border-white rounded-full p-2 hover:bg-white hover:text-[#3d4d42] transition">
+        <button
+          class="border-2 border-white rounded-full p-2 hover:bg-white hover:text-[#3d4d42] transition"
+        >
           <Twitter class="w-5 h-5" />
         </button>
-        <button class="border-2 border-white rounded-full p-2 hover:bg-white hover:text-[#3d4d42] transition">
+        <button
+          class="border-2 border-white rounded-full p-2 hover:bg-white hover:text-[#3d4d42] transition"
+        >
           <Youtube class="w-5 h-5" />
         </button>
-        <button class="border-2 border-white rounded-full p-2 hover:bg-white hover:text-[#3d4d42] transition">
+        <button
+          class="border-2 border-white rounded-full p-2 hover:bg-white hover:text-[#3d4d42] transition"
+        >
           <Instagram class="w-5 h-5" />
         </button>
       </div>
@@ -323,9 +388,11 @@
 
     <!-- COPYRIGHT -->
     <div class=" text-center text-xs text-gray-300">
-      <p class="text-sl">©  2025 Rutger Kortenhorst. All Rights Reserved | Design and Developed by</p>
+      <p class="text-sl">
+        © 2025 Rutger Kortenhorst. All Rights Reserved | Design and Developed
+        by
+      </p>
       <p class="text-cyan-400 mt-1 text-sl">Burning Desire Inclusive</p>
     </div>
-
   </div>
 </footer>
