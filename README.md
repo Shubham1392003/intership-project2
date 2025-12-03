@@ -66,16 +66,20 @@ src/
 │   │   └── (all project images)
 │   │
 │   │
-│   └── api/
+│   ├── api/geeta.js        → API helper
+│   ├── components/         → UI components
+│   └── assets/             → images
 │       └── (future API integration files)
 │
 ├── routes/
-│ └── +page.svelte        # Main Bhagavad Gita page UI and  HTML template
+│   ├── api/chapter/[id]/+server.js  → proxy
+│   └── +page.svelte        → home UI
 │   
 │   
 ├── app.css
 │
-└── app.html           
+└── app.html
+       
 
 
 ---
