@@ -9,9 +9,10 @@ export async function getChapter(num) {
 
     // Extract HTML "lyrics" and return clean objects
     return data.data.map(item => ({
-      html: item.lyrics,     // raw HTML of verse
-      audio: item.audio,
-      qr: item.qr
+      shlok_no: item.shlok_no,   // correct
+      lyrics: item.lyrics,       // correct
+      music: "https://sanskrit.ie/" + item.music,         // correct
+      qr: item.qr       
     }));
 
   } catch (e) {

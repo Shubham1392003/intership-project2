@@ -1,6 +1,7 @@
 <script>
   import { Facebook, Twitter, Youtube, Instagram } from "lucide-svelte";
   import { getChapter } from "$lib/api/geeta.js";
+  import ShlokPage from "$lib/components/ShlokPage.svelte";
 
   let mobileMenu = false;
   let activeDropdown = null;
@@ -9,34 +10,33 @@
   let verses = [];
   let loading = false;
 
+  function back() {
+    selectedChapter = null;
+  }
+
   function toggleDropdown(name) {
     activeDropdown = activeDropdown === name ? null : name;
   }
 
-  // Load verses from API
   async function loadChapter(ch) {
     selectedChapter = ch;
     loading = true;
-    verses = await getChapter(ch);
+    verses = await getChapter(ch);  // must return [{ number, lyrics, audio }]
     loading = false;
+    console.log(verses);
+
   }
 
   const chapters = Array.from({ length: 18 }, (_, i) => i + 1);
 
- 
   function htmlContent(node, html) {
     node.innerHTML = html;
-
     return {
       update(newHtml) {
         node.innerHTML = newHtml;
       }
     };
   }
-
-
-
-
 </script>
 
 <svelte:head>
@@ -221,6 +221,16 @@
   </div>
 
   <!-- ========================= CHAPTERS SECTION ========================= -->
+   <!-- ✅ If a chapter is selected → Show ShlokPage -->
+{#if selectedChapter}
+  <ShlokPage 
+    chapter={selectedChapter}
+    verses={verses}
+    back={back}
+  />
+  <!-- stop showing the chapter list -->
+  {:else}
+
   <section class="relative py-20 px-4">
     <!-- Floating Gita Book (half in header, half in chapter) -->
     <div class="relative z-[30] flex justify-center -mt-[120px] mb-6">
@@ -309,7 +319,7 @@
   <p class="text-center text-lg text-black mt-6">Loading verses...</p>
 {/if}
 
-{#if selectedChapter && verses.length}
+<!-- {#if selectedChapter && verses.length}
   <div class="mt-10 bg-white/60 p-6 rounded shadow-lg backdrop-blur-sm">
     
     <h3 class="text-2xl font-bold text-center mb-4 text-[#3E4939]">
@@ -320,10 +330,10 @@
       <div class="my-4 p-4 bg-white/80 rounded shadow">
         
         <!-- FIX: Pass v.html here -->
-        <div
+        <!-- <div
           class="text-gray-900 text-base leading-relaxed"
           use:htmlContent={v.html}
-        ></div>
+        ></div>c
 
         {#if v.audio}
           <audio controls class="mt-2 w-full">
@@ -335,12 +345,14 @@
     {/each}
 
   </div>
-{/if}
+{/if} -->
 
 
     </div>
   </section>
+  {/if}
 </div>
+
 
 <!-- ========================= FOOTER ========================= -->
 <footer
